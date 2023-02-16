@@ -13,7 +13,6 @@ b. Створення бази даних
 CREATE DATABASE firstlab;
 c. Створення таблиці на основі універсального відношення. Команда для створення таблиці повинна містити головний ключ, обмеження
 типу null / not null, default, check. ЗВЕРНІТЬ УВАГУ!!! Усі поля повинні мати назви латиницею!
-
 CREATE TABLE book (
 n int (200) NOT NULL UNIQUE AUTO_INCREMENT,
 title VARCHAR(100) NOT NULL,
@@ -51,9 +50,7 @@ ALTER TABLE book
 DROP COLUMN n;
 
 
-КОД
-
-
+КОД\
 CREATE TABLE book (
 n int (200) NOT NULL UNIQUE AUTO_INCREMENT,
 title VARCHAR(100) NOT NULL,
