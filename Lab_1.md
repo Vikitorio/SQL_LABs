@@ -47,23 +47,20 @@ n int (200) NOT NULL UNIQUE AUTO_INCREMENT,
 title VARCHAR(100) NOT NULL,
 price float(30) NOT NULL,
 date date NOT NULL DEFAULT '2021-11-11',
-PRIMARY KEY (n));
-
+PRIMARY KEY (n));  
 ALTER TABLE book
-ADD code varchar(30) NOT NULL DEFAULT '00';
-
+ADD code varchar(30) NOT NULL DEFAULT '00';  
 INSERT INTO book (title, price, date, code)
 VALUES('Апаратні засоби мультимедіа. Відеосистема
 РС',22.50,' 2011-10-5','022'), 
 ('Засвой самостійно модернізацію та ремонт
 ПК за 24 години, 2-ге вид.',18.90,'07/07/2000','4985'),
-('Структури даних та алгоритми',37.80,'9/29/2000','5141');
-
+('Структури даних та алгоритми',37.80,'9/29/2000','5141');  
 ALTER TABLE book
-ADD author varchar(15) NOT NULL DEFAULT 'announ';
+ADD author varchar(15) NOT NULL DEFAULT 'announ';  
 ALTER TABLE book
-MODIFY COLUMN author varchar(20);
+MODIFY COLUMN author varchar(20);  
 ALTER TABLE book
-DROP COLUMN author;
+DROP COLUMN author;  
 ALTER TABLE book
-DROP COLUMN n;
+DROP COLUMN n;  
