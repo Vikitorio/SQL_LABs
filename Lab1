@@ -77,4 +77,4 @@ ALTER TABLE book
 DROP COLUMN author;
 3.e)
 ALTER TABLE book
-DROP COLUMN n;
+DROP COLUMN index;
