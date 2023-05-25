@@ -1,0 +1,124 @@
+ЛР №9
+Проектування користувальницьких функцій (user defined function). Робота з SQL курсором (cursor).
+1. Розробити та перевірити скалярну (scalar) функцію, що повертає загальну вартість книг виданих в певному році.
+2. Розробити і перевірити табличну (inline) функцію, яка повертає список книг виданих в певному році.
+3. Розробити і перевірити функцію типу multi-statement, яка буде:
+a. приймати в якості вхідного параметра рядок, що містить список назв видавництв, розділених символом ‘;’;
+b. виділяти з цього рядка назву видавництва;
+c. формувати нумерований список назв видавництв.
+4. Виконати набір операцій по роботі з SQL курсором: оголосити курсор;
+a. використовувати змінну для оголошення курсору;
+b. відкрити курсор;
+c. переприсвоїти курсор іншої змінної;
+d. виконати вибірку даних з курсору;
+e. закрити курсор;
+5. звільнити курсор. Розробити курсор для виводу списка книг виданих у визначеному році.
+
+1. Розробити та перевірити скалярну (scalar) функцію, що повертає загальну вартість книг виданих в певному році.
+DELIMITER //
+
+CREATE FUNCTION CalculateTotalPriceByYear(year_param INT)
+RETURNS FLOAT
+BEGIN
+    DECLARE total_price FLOAT;
+    SELECT SUM(Price) INTO total_price FROM Book WHERE YEAR(Date) = year_param;
+    RETURN total_price;
+END //
+DELIMITER ;
+SELECT CalculateTotalPriceByYear(2000) AS TotalPrice;
+2. Розробити і перевірити табличну (inline) функцію, яка повертає список книг виданих в певному році.
+DELIMITER //
+
+CREATE FUNCTION GetBooksByYear(year_param INT)
+RETURNS TABLE
+RETURN (
+    SELECT * FROM Book WHERE YEAR(Date) = year_param
+) //
+
+DELIMITER ;
+SELECT * FROM GetBooksByYear(2022);
+3. Розробити і перевірити функцію типу multi-statement, яка буде:
+DELIMITER //
+
+CREATE FUNCTION GeneratePublisherList(publishers_param VARCHAR(200))
+RETURNS VARCHAR(200)
+BEGIN
+    DECLARE publisher_list VARCHAR(200);
+    DECLARE current_publisher VARCHAR(40);
+    DECLARE separator CHAR(1) DEFAULT = ';';
+    DECLARE counter INT DEFAULT = 1;
+    
+    SET publisher_list = '';
+    
+    WHILE LENGTH(publishers_param) > 0 DO
+        SET current_publisher = SUBSTRING_INDEX(publishers_param, separator, 1);
+        SET publishers_param = SUBSTRING(publishers_param, LENGTH(current_publisher) + 2);
+        
+        SET publisher_list = CONCAT(publisher_list, counter, '. ', current_publisher, '; ');
+        SET counter = counter + 1;
+    END WHILE;
+    
+    RETURN publisher_list;
+END //
+
+DELIMITER ;
+SELECT GeneratePublisherList('bhv;asd;asdasd') AS PublisherList;
+4. Виконати набір операцій по роботі з SQL курсором: оголосити курсор;
++
+5. звільнити курсор. Розробити курсор для виводу списка книг виданих у визначеному році.
+DELIMITER //
+
+CREATE FUNCTION PrintBooksByYear(year_param INT)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE book_title VARCHAR(200);
+    
+    DECLARE cur CURSOR FOR SELECT Title FROM Book WHERE YEAR(Date) = year_param;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN cur;
+    
+    read_loop: LOOP
+        FETCH cur INTO book_title;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        SELECT book_title;
+    END LOOP;
+    
+    CLOSE cur;
+    
+END //
+
+DELIMITER ;
+CALL PrintBooksByYear(2022);
+
+DELIMITER //
+
+CREATE FUNCTION PrintBooksByYear(year_param INT)
+RETURNS VARCHAR(200)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE book_title VARCHAR(200);
+    
+    DECLARE cur CURSOR FOR SELECT Title FROM Book WHERE YEAR(Date) = year_param;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN cur;
+    
+    read_loop: LOOP
+        FETCH cur INTO book_title;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        SELECT book_title;
+    END LOOP;
+    
+    CLOSE cur;
+    
+END //
+
+DELIMITER ;
+
