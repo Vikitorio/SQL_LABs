@@ -38,30 +38,31 @@ RETURN (
 DELIMITER ;
 SELECT * FROM GetBooksByYear(2022);
 3. Розробити і перевірити функцію типу multi-statement, яка буде:
+a. приймати в якості вхідного параметра рядок, що містить список назв видавництв, розділених символом ‘;’;
+b. виділяти з цього рядка назву видавництва;
+c. формувати нумерований список назв видавництв.
 DELIMITER //
 
-CREATE FUNCTION GeneratePublisherList(publishers_param VARCHAR(200))
+CREATE FUNCTION GeneratePublisherList(publisherList VARCHAR(200))
 RETURNS VARCHAR(200)
 BEGIN
-    DECLARE publisher_list VARCHAR(200);
-    DECLARE current_publisher VARCHAR(40);
-    DECLARE separator CHAR(1) DEFAULT = ';';
-    DECLARE counter INT DEFAULT = 1;
+    DECLARE result VARCHAR(200) DEFAULT '';
+    DECLARE publisher VARCHAR(40);
+    DECLARE counter INT DEFAULT 1;
     
-    SET publisher_list = '';
-    
-    WHILE LENGTH(publishers_param) > 0 DO
-        SET current_publisher = SUBSTRING_INDEX(publishers_param, separator, 1);
-        SET publishers_param = SUBSTRING(publishers_param, LENGTH(current_publisher) + 2);
+    WHILE LENGTH(publisherList) > 0 DO
+        SET publisher = SUBSTRING_INDEX(publisherList, ';', 1);
+        SET publisherList = SUBSTRING(publisherList, LENGTH(publisher) + 2);
         
-        SET publisher_list = CONCAT(publisher_list, counter, '. ', current_publisher, '; ');
+        SET result = CONCAT(result, counter, '. ', publisher, '\n');
         SET counter = counter + 1;
     END WHILE;
     
-    RETURN publisher_list;
+    RETURN result;
 END //
 
 DELIMITER ;
+
 SELECT GeneratePublisherList('bhv;asd;asdasd') AS PublisherList;
 4. Виконати набір операцій по роботі з SQL курсором: оголосити курсор;
 +
