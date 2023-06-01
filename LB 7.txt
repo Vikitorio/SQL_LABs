@@ -1,0 +1,123 @@
+ЛР №7 
+Проектування і перевірка збережених процедур (stored procedure): без параметрів, з вхідними параметрами, з вхідними параметрами за 
+замовчуванням, з вихідними параметрами 
+1.  Вивести значення наступних колонок: назва книги, ціна, назва видавництва, формат. 
+CREATE PROCEDURE books_info_base()
+SELECT book.Title, book.Price, book_production.Production, book.Format
+FROM Book
+INNER JOIN book_production ON book.Production_id = book_production.id
+CALL books_info_base();
+2.  Вивести значення наступних колонок: тема, категорія, назва книги, назва видавництва. Фільтр по темам і категоріям. 
+CREATE PROCEDURE books_info_full()
+SELECT book_topic.Topic, book_category.Category, book.Title, book_production.Production
+FROM Book
+INNER JOIN book_topic ON book.Topic_id = book_topic.id
+INNER JOIN book_category ON book.Category_id = book_category.id
+INNER JOIN book_production ON book.Production_id = book_production.id
+CALL books_info_full();
+3.  Вивести книги видавництва 'BHV', видані після 2000 р 
+CREATE PROCEDURE book_filter_pr_date(IN production_id VARCHAR(255), date_id VARCHAR(255))
+SELECT Book.Title
+FROM Book
+INNER JOIN book_production ON Book.Production_id = book_production.id
+WHERE book_production.Production = production_id AND Book.Date > date_id;
+CALL book_filter_pr_date('Видавнича група BHV', '2000-01-01');
+4.  Вивести загальну кількість сторінок по кожній назві категорії. Фільтр по спадаючій / зростанню кількості сторінок.
+DELIMITER //
+CREATE PROCEDURE book_filter_pages(IN sort_order VARCHAR(255))
+BEGIN
+IF sort_order = 'asc' THEN 
+SELECT book_category.Category, SUM(Pages) FROM book 
+INNER JOIN book_category ON book.Category_id = book_category.id
+GROUP BY Category
+ORDER BY Pages ASC;
+ELSEIF sort_order = 'desc' THEN
+SELECT book_category.Category, SUM(Pages) FROM book 
+INNER JOIN book_category ON book.Category_id = book_category.id
+GROUP BY Category
+ORDER BY Pages DESC;
+ELSE
+SELECT * FROM book;  
+END IF;
+END //
+DELIMITER ;
+CALL book_filter_pages('desc');
+CALL book_filter_pages('asc');
+5.  Вивести середню вартість книг по темі 'Використання ПК' і категорії 'Linux'. 
+CREATE PROCEDURE IF NOT EXIST book_avg_price()
+SELECT  AVG(Book.Price) as Average_Price
+FROM Book
+INNER JOIN book_topic ON Book.Topic_id = book_topic.id
+INNER JOIN book_category ON Book.Category_id = book_category.id
+WHERE book_topic.Topic = 'Використання ПК' AND book_category.Category = 'Linux';
+CALL book_avg_price();
+6.  Вивести всі дані універсального відношення. 
+CREATE PROCEDURE IF NOT EXIST book_uni()
+SELECT * FROM Book
+INNER JOIN book_production ON Book.Production_id = book_production.id
+INNER JOIN book_category ON Book.Category_id = book_category.id
+INNER JOIN book_topic ON Book.Topic_id = book_topic.id;
+CALL book_uni();
+
+7.  Вивести пари книг, що мають однакову кількість сторінок. 
+8.  Вивести тріади книг, що мають однакову ціну. 
+
+9.  Вивести всі книги категорії 'C ++'. 
+CREATE PROCEDURE IF NOT EXIST book_by_category(IN user_category VARCHAR(255) = 'C&C++')
+SELECT Title FROM Book
+WHERE Category_id = (SELECT id FROM book_category WHERE Category = user_category);
+CALL book_by_category();
+
+10. Вивести список видавництв, у яких розмір книг перевищує 400 сторінок. 
+CREATE PROCEDURE  book_publisher_pagefilter(IN pagelim INT)
+SELECT Production_id
+FROM (
+    SELECT book.Production_id, MIN(book.Pages) as min
+    FROM Book
+    INNER JOIN book_production ON book.Production_id = book_production.id
+    GROUP BY book.Production_id
+) subquery
+WHERE subquery.min > pagelim;
+CALL book_publisher_pagefilter(400);
+
+11. Вивести список категорій за якими більше 3-х книг
+CREATE PROCEDURE  category_more_then(IN bookcount INT). 
+SELECT Category FROM book_category
+WHERE (SELECT COUNT(*) FROM Book  WHERE Category_id = book_category.id) > bookcount;
+CALL category_more_then(3)
+12. Вивести список книг видавництва 'BHV', якщо в списку є хоча б одна книга цього видавництва. 
+DELIMITER //
+
+CREATE PROCEDURE GetBooksByPublisher()
+BEGIN
+    SELECT * FROM Book
+    WHERE EXISTS (
+        SELECT * FROM book_production
+        WHERE Production = 'Видавнича група BHV' AND Book.Production_id = book_production.id
+    );
+END //
+DELIMITER ;
+13. Вивести список книг видавництва 'BHV', якщо в списку немає жодної книги цього видавництва. 
+DELIMITER //
+
+CREATE PROCEDURE GetBooksNotByPublisher()
+BEGIN
+    SELECT * FROM Book
+    WHERE NOT EXISTS (
+        SELECT * FROM book_production
+        WHERE Production = 'Видавнича група BHV' AND Book.Production_id = book_production.id
+    );
+END //
+
+DELIMITER ;
+14. Вивести відсортоване загальний список назв тем і категорій. 
+CREATE PROCEDURE category_and_topic() 
+SELECT  book_category.id, book_category.Category FROM `book_category` 
+UNION 
+SELECT  book_topic.id, book_topic.Topic FROM `book_topic`
+ORDER BY id;
+CALL category_and_topic();
+15. Вивести відсортований в зворотному порядку загальний список перших слів назв книг і категорій що не повторюються 
+CREATE PROCEDURE first_word() 
+SELECT SUBSTRING_INDEX(Title, ' ', 1) as FirstWordTitle FROM book ORDER BY FirstWordTitle DESC;
+CALL first_word();
